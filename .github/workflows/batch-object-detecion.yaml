@@ -1,0 +1,36 @@
+name: Batch Object Detection
+
+on:
+  workflow_dispatch:
+
+jobs:
+  detect_objects:
+    name: Detect Objects
+    runs-on:
+      - machine
+      - gpu=T4
+      - tenancy=spot
+      - cpu=4
+      - ram=16
+      - architecture=x64
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Object Detection
+        run: python3 object_detection.py
+
+      - name: Upload Detection Results CSV
+        uses: actions/upload-artifact@v4
+        with:
+          name: detection-results-csv
+          path: detection_output/detections.csv
