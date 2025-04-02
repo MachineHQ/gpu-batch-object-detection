@@ -2,6 +2,15 @@ name: Batch Object Detection
 
 on:
   workflow_dispatch:
+    inputs:
+      tenancy:
+        type: choice
+        required: false
+        description: 'The tenancy of the machine'
+        default: 'spot'
+        options:
+          - 'spot'
+          - 'on_demand'
 
 jobs:
   detect_objects:
@@ -9,10 +18,10 @@ jobs:
     runs-on:
       - machine
       - gpu=T4
-      - tenancy=spot
       - cpu=4
       - ram=16
       - architecture=x64
+      - tenancy=${{ inputs.tenancy }}
     steps:
 
       - uses: actions/checkout@v4

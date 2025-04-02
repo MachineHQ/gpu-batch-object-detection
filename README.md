@@ -40,28 +40,37 @@ Ensure your repository uses Machine GPU-powered runners. No additional configura
 - Trigger via commit or manually using GitHub Actions (**workflow_dispatch**).
 - The workflow downloads and processes the first 1000 images from COCO2017.
 
-#### 4. **Review Outputs**
-- Annotated images and `detections.csv` will be saved in the `detection_output/` directory.
-- The CSV file is uploaded as a GitHub Actions artifact for convenient access.
-
-The workflow itself is defined in `.github/workflows/batch-object-detection.yml` and is fairly routine:
+You can run the benchmarking workflow manually via GitHub Actions using the workflow_dispatch trigger. This allows you to input parameters such as the tenancy you wish to use:
 
 ```yaml
-name: Batch Object Detection
-
 on:
   workflow_dispatch:
+    inputs:
+      tenancy:
+        type: choice
+        required: false
+        description: 'The tenancy of the machine'
+        default: 'spot'
+        options:
+          - 'spot'
+          - 'on_demand'
+```
+These inputs are configurable directly in the GitHub Actions UI when manually triggering the workflow.
 
+
+The workflow itself is fairly routine:
+
+```yaml
 jobs:
   detect_objects:
     name: Detect Objects
     runs-on:
       - machine
       - gpu=T4
-      - tenancy=spot
       - cpu=4
       - ram=16
       - architecture=x64
+      - tenancy=${{ inputs.tenancy }}
     steps:
 
       - uses: actions/checkout@v4
@@ -83,9 +92,14 @@ jobs:
         with:
           name: detection-results-csv
           path: detection_output/detections.csv
-```
 
+```
 We have configured the detect_objects job to run on a Machine GPU runner with the desired specs.The workflow then installs dependencies, runs the object detection script, and uploads the resulting CSV as an artifact.
+
+
+#### 4. **Review Outputs**
+- Annotated images and `detections.csv` will be saved in the `detection_output/` directory.
+- The CSV file is uploaded as a GitHub Actions artifact for convenient access.
 
 ---
 
